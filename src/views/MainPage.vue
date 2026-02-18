@@ -1,35 +1,28 @@
 <template>
   <v-container class="pa-4" fluid>
-    <div class="text-h6 font-weight-bold text-primary mb-3">Flight Search</div>
-
-    <v-card class="pa-5 mb-5 rounded-xl" elevation="2">
-      <v-row dense>
-        <v-col cols="12">
+    <h2 class="mb-4 text-primary">Flight Search</h2>
+    <v-card class="pa-4 mb-4" elevation="1">
+      <v-row>
+        <v-col cols="12" md="6">
           <v-select
+            color="primary"
             v-model="selectedSource"
             :items="sourceItems"
             label="From"
             variant="outlined"
-            density="comfortable"
-            class="mb-2"
-            hide-details="auto"
-            bg-color="background"
-            color="primary"
+            hide-details
           />
         </v-col>
 
-        <v-col cols="12">
+        <v-col cols="12" md="6">
           <v-select
+            color="primary"
             v-model="selectedDestination"
             :items="destinationItems"
             label="To"
             variant="outlined"
-            density="comfortable"
-            class="mb-3"
             :disabled="!selectedSource"
-            hide-details="auto"
-            bg-color="background"
-            color="primary"
+            hide-details
           />
         </v-col>
 
@@ -37,150 +30,64 @@
           <v-btn
             block
             color="primary"
-            size="large"
             @click="searchOutput"
             :disabled="!selectedSource || !selectedDestination"
-            class="mt-1"
-            variant="elevated"
           >
-            Search Flights
+            Search
           </v-btn>
         </v-col>
       </v-row>
     </v-card>
+    <div v-if="filteredFlights.length">
+      <p class="mb-3">{{ filteredFlights.length }} flight(s) found</p>
 
-    <div
-      v-if="filteredFlights.length"
-      class="d-flex align-center justify-space-between mb-4"
-    >
-      <div class="text-body-2 text-medium-emphasis">
-        {{ filteredFlights.length }} flight{{
-          filteredFlights.length > 1 ? "s" : ""
-        }}
-        found
-      </div>
-    </div>
+      <v-card
+        v-for="flight in filteredFlights"
+        :key="flight.id"
+        class="mb-3 pa-3"
+        elevation="1"
+      >
+        <div class="mb-2">
+          <strong>{{ flight.company }}</strong>
+        </div>
 
-    <div v-for="flight in filteredFlights" :key="flight.id" class="mb-4">
-      <v-card class="rounded-xl" elevation="2">
-        <v-card-item>
-          <template v-slot:prepend>
-            <v-avatar
-              color="primary"
-              variant="tonal"
-              size="40"
-              class="rounded-lg"
-            >
-              <span class="text-primary font-weight-bold">{{
-                flight.company[0]
-              }}</span>
-            </v-avatar>
-          </template>
+        <div class="mb-1">
+          {{ flight.segment[0].origin }}
+          →
+          {{ flight.segment[flight.segment.length - 1].destination }}
+        </div>
 
-          <v-card-title class="font-weight-bold text-body-1">
-            {{ flight.company }}
-          </v-card-title>
+        <div class="mb-1">Duration: {{ flight.duration }} mins</div>
 
-          <v-card-subtitle class="text-body-2 mt-1">
-            <v-icon size="14" color="primary" class="mr-1"
-              >mdi-airplane-takeoff</v-icon
-            >
-            {{ flight.segment[0].origin }}
-            <v-icon size="14" color="medium-emphasis" class="mx-1"
-              >mdi-arrow-right</v-icon
-            >
-            {{ flight.segment[flight.segment.length - 1].destination }}
-          </v-card-subtitle>
+        <div class="mb-2">Stops: {{ flight.segment.length - 1 }}</div>
 
-          <template v-slot:append>
-            <v-chip
-              color="primary"
-              variant="tonal"
-              size="small"
-              class="font-weight-bold"
-            >
-              {{ flight.points }} pts
-            </v-chip>
-          </template>
-        </v-card-item>
+        <v-divider class="my-2"></v-divider>
 
-        <v-divider></v-divider>
+        <div
+          v-for="(segment, index) in flight.segment"
+          :key="index"
+          class="mb-2"
+        >
+          <div>{{ segment.origin }} → {{ segment.destination }}</div>
 
-        <v-card-text>
-          <v-row align="center" class="mb-2">
-            <v-col cols="auto" class="pr-0">
-              <v-icon size="16" color="medium-emphasis"
-                >mdi-clock-outline</v-icon
-              >
-            </v-col>
-            <v-col>
-              <span class="text-body-2">{{ flight.duration }} mins total</span>
-            </v-col>
-          </v-row>
+          <div class="text-caption">
+            {{ formatTime(segment.departureTime) }} -
+            {{ formatTime(segment.arrivalTime) }}
+          </div>
 
-          <v-row align="center" class="mb-2">
-            <v-col cols="auto" class="pr-0">
-              <v-icon size="16" color="medium-emphasis">mdi-transfer</v-icon>
-            </v-col>
-            <v-col>
-              <span class="text-body-2">
-                {{ flight.segment.length - 1 }} stop{{
-                  flight.segment.length > 2 ? "s" : ""
-                }}
-              </span>
-            </v-col>
-          </v-row>
-
-          <v-card class="pa-3 mt-3" variant="outlined">
-            <div
-              v-for="(segment, index) in flight.segment"
-              :key="index"
-              class="mb-3"
-            >
-              <div class="text-body-2 font-weight-medium">
-                {{ segment.origin }} → {{ segment.destination }}
-              </div>
-
-              <div class="text-caption text-medium-emphasis mt-1">
-                {{ formatTime(segment.departureTime) }} -
-                {{ formatTime(segment.arrivalTime) }}
-              </div>
-
-              <div
-                v-if="segment.connectionDuration"
-                class="text-caption text-warning mt-1"
-              >
-                <v-icon size="14" color="warning" class="mr-1">
-                  mdi-timer-sand
-                </v-icon>
-                Connection: {{ segment.connectionDuration }} mins
-              </div>
-
-              <v-divider
-                v-if="index < flight.segment.length - 1"
-                class="mt-3"
-              />
-            </div>
-          </v-card>
-        </v-card-text>
+          <div v-if="segment.connectionDuration" class="text-caption">
+            Connection: {{ segment.connectionDuration }} mins
+          </div>
+        </div>
       </v-card>
     </div>
-
-    <!-- <v-card
+    <!-- <div
       v-if="
         selectedSource && selectedDestination && filteredFlights.length === 0
       "
-      class="rounded-xl pa-8 text-center"
-      elevation="2"
     >
-      <v-icon size="48" color="medium-emphasis" class="mb-3"
-        >mdi-airplane-off</v-icon
-      >
-      <div class="text-body-1 text-medium-emphasis">No flights found</div>
-      <div class="text-caption text-medium-emphasis mt-1">
-        Try different airports
-      </div>
-    </v-card> -->
+      <p>No flights found.</p>
+    </div> -->
   </v-container>
 </template>
 
