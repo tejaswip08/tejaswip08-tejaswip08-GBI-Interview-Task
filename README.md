@@ -1,24 +1,33 @@
-# my-app
+# Flight Search Application
 
-## Project setup
-```
-npm install
-```
+This is a Single Page Responsive Application built using Vue.js 3 and Vuetify 3.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+The app allows users to search available flights based on Source and Destination using the provided JSON data.
 
-### Compiles and minifies for production
-```
-npm run build
-```
+---
 
-### Lints and fixes files
-```
-npm run lint
-```
+## Features
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- Select Source from dropdown (loaded from JSON)
+- Select Destination based on selected Source
+- Prevent same Source and Destination selection
+- Display all matching airlines
+- Show:
+  - Airline name
+  - Route (Origin → Destination)
+  - Total duration
+  - Points
+  - Stops
+  - Segment details (Departure & Arrival time)
+- Responsive design (Mobile & Desktop)
+
+---
+
+## Logic Used
+
+- Source = `segment[0].origin`
+- Destination = `segment[last].destination`
+- Duplicate values removed using array filtering
+- Flights filtered using `.filter()` method
+
+---
